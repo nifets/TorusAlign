@@ -1,0 +1,8 @@
+// Workspace settings
+{
+    // hidden files
+    "files.exclude": {
+        "LICENSE": true,
+        ".JuliaFormatter.toml": true
+    }
+}
