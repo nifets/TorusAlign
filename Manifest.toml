@@ -2,7 +2,7 @@
 
 julia_version = "1.9.4"
 manifest_format = "2.0"
-project_hash = "1d851db50a51db6ff0d4895e4501567058e784b9"
+project_hash = "e04411cf5b6c964f2d1fd814b16d3519a079eabc"
 
 [[deps.ArgParse]]
 deps = ["Logging", "TextWrap"]

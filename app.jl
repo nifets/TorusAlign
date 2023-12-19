@@ -1,7 +1,6 @@
 module App
 
 using GenieFramework
-using Main.StatisticAnalysis
 @genietools
 
 using GenieFramework.Genie.Renderer.Html
@@ -23,8 +22,7 @@ end
 using GenieFramework.Genie.Requests: postpayload
 route("/result"; method=POST) do
     N = parse(Int, postpayload(:N))
-    x = gen_numbers(N)
-    m = calc_mean(x)
+    m = 0.0
     return p("The mean of $N random numbers is: $m"; style="font-size:20px")
 end
 

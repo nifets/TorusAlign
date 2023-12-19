@@ -1,7 +1,7 @@
 module ReactiveForm
 using GenieFramework
-using .Main.App.StatisticAnalysis
 using PlotlyBase
+using Statistics
 @genietools
 
 @app begin
@@ -12,8 +12,8 @@ using PlotlyBase
     @out layout = PlotlyBase.Layout(; title="Histogram plot")
 
     @onchange N begin
-        x = gen_numbers(N)
-        m = calc_mean(x)
+        x = rand(N)
+        m = mean(x)
         trace = [histogram(; x=x)]
     end
 end
