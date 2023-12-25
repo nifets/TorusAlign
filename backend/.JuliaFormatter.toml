@@ -1,0 +1,3 @@
+style = "blue"
+separate_kwargs_with_semicolon = false
+always_use_return = false
