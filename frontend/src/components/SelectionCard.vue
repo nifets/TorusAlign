@@ -1,6 +1,9 @@
 <template>
-  <q-card>
-    <q-card-section style="width: 400px">
+  <q-card style="width: 400px; height: 600px">
+    <q-toolbar class="q-pl-lg bg-primary text-white shadow-2">
+      <q-toolbar-title>Protein Chains</q-toolbar-title>
+    </q-toolbar>
+    <q-card-section>
       <draggable
         :list="selectedItems"
         item-key="id"
@@ -18,10 +21,11 @@
           >
             <q-item-section style="width: 40px" side top>
               <q-btn
-                style="width: 20px"
                 :icon="farSquareMinus"
                 flat
+                dense
                 float-left
+                square
                 size="8px"
                 @click="removeItem(element.id)"
               />
@@ -37,26 +41,71 @@
           </q-item>
         </template>
       </draggable>
-    </q-card-section>
-    <q-card-section>
-      <q-select v-model="input" :options="allItems">
-        <template #option="scope">
-          <q-item v-bind="scope.itemProps">
-            <q-item-section>
-              <q-item-label>{{ scope.opt.moleculeName }}</q-item-label>
-              <q-item-label caption>{{ scope.opt.id }}</q-item-label>
-            </q-item-section>
-          </q-item>
+      <q-item>
+        <q-item-section style="width: 40px" side top>
+          <q-btn
+            :icon="adding ? farSquareMinus : farSquarePlus"
+            flat
+            dense
+            float-left
+            square
+            size="8px"
+            @click="
+              adding = !adding;
+              input = undefined;
+            "
+          />
+        </q-item-section>
+        <template v-if="adding">
+          <q-item-section>
+            <q-select
+              v-model="input"
+              :options="options"
+              placeholder="Enter search term (PDB id, name, class etc.)"
+              :use-input="input == null"
+              clearable
+              hide-dropdown-icon
+              @keyup.enter="addItem()"
+              @filter="filterFn"
+            >
+              <template #option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt.moleculeName }}</q-item-label>
+                    <q-item-label caption>{{ scope.opt.id }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template>
+              <template #selected>
+                <q-item v-if="input">
+                  <q-item-section>
+                    <q-item-label>{{ input.moleculeName }} </q-item-label>
+                    <q-item-label caption> {{ input.id }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template>
+              <template #no-option>
+                <q-item>
+                  <q-item-section class="text-grey">
+                    No results
+                  </q-item-section>
+                </q-item>
+              </template>
+              <template #after>
+                <q-btn
+                  v-if="input"
+                  color="primary"
+                  label="Add"
+                  square
+                  padding="xs"
+                  size="10px"
+                  @click="addItem()"
+                />
+              </template>
+            </q-select>
+          </q-item-section>
         </template>
-        <template #selected>
-          <q-item v-if="input">
-            <q-item-section>
-              <q-item-label>{{ input.moleculeName }} </q-item-label>
-              <q-item-label caption> {{ input.id }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </template>
-      </q-select>
+      </q-item>
     </q-card-section>
   </q-card>
 </template>
@@ -64,7 +113,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import draggable from 'vuedraggable';
-import { farSquareMinus } from '@quasar/extras/fontawesome-v6';
+import { farSquareMinus, farSquarePlus } from '@quasar/extras/fontawesome-v6';
 import { PdbEntity } from 'components/models';
 
 const allItems = ref<PdbEntity[]>([
@@ -116,11 +165,13 @@ const allItems = ref<PdbEntity[]>([
     sequenceLength: 136,
   },
 ]);
-const selectedItems = allItems;
+const options = ref<PdbEntity[]>(allItems.value);
+const selectedItems = ref<PdbEntity[]>([]);
 
 // Reactive data
 const input = ref<PdbEntity>();
 const dragging = ref(false);
+const adding = ref(false);
 
 // Computed data
 const dragOptions = {
@@ -142,28 +193,37 @@ function removeItem(id: string) {
   }
 }
 
-// function filterFn(val, update) {
-//   if (val === '') {
-//     update(() => {
-//       options.value = stringOptions;
+function addItem() {
+  if (input.value && !selectedItems.value.includes(input.value)) {
+    selectedItems.value.push(input.value);
+    adding.value = false;
+    input.value = undefined;
+  }
+}
 
-//       // here you have access to "ref" which
-//       // is the Vue reference of the QSelect
-//     });
-//     return;
-//   }
-
-//   update(() => {
-//     const needle = val.toLowerCase();
-//     options.value = stringOptions.filter(
-//       (v) => v.toLowerCase().indexOf(needle) > -1
-//     );
-//   });
-// }
+function filterFn(
+  val: string,
+  update: (fn: () => void) => void,
+  abort: () => void
+) {
+  if (val.length < 2) {
+    abort();
+    return;
+  }
+  update(() => {
+    const needle = val.toLowerCase();
+    options.value = allItems.value.filter((option) => {
+      return (
+        option.id.toLowerCase().indexOf(needle) > -1 &&
+        !selectedItems.value.includes(option)
+      );
+    });
+  });
+}
 </script>
 
 <style>
-.my-btn {
-  width: 20px;
+input::placeholder {
+  font-size: 0.8em;
 }
 </style>
