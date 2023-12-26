@@ -53,6 +53,7 @@
             @click="
               adding = !adding;
               input = undefined;
+              setFocus();
             "
           />
         </q-item-section>
@@ -62,6 +63,7 @@
               v-model="input"
               :options="options"
               placeholder="Enter search term (PDB id, name, class etc.)"
+              ref="textBox"
               :use-input="input == null"
               clearable
               hide-dropdown-icon
@@ -111,10 +113,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import draggable from 'vuedraggable';
 import { farSquareMinus, farSquarePlus } from '@quasar/extras/fontawesome-v6';
 import { PdbEntity } from 'components/models';
+
+const textBox = ref<HTMLInputElement | null>(null);
 
 const allItems = ref<PdbEntity[]>([
   {
@@ -180,6 +184,12 @@ const dragOptions = {
   disabled: false,
   ghostClass: 'ghost',
 };
+
+function setFocus() {
+  nextTick(() => {
+    textBox.value?.focus();
+  });
+}
 
 // Methods
 function endDrag() {
