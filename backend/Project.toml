@@ -1,7 +1,2 @@
 [deps]
 Genie = "c43c736e-a2d1-11e8-161f-af95117fbd1e"
-GenieFramework = "a59fdf5c-6bf0-4f5d-949c-a137c9e2f353"
-HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-PlotlyBase = "a03496cd-edff-5a9b-9e67-9cda94a718b5"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-StippleUI = "a3c5d34a-b254-4859-a8fa-b86abb7e84a3"
