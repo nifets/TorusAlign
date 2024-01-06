@@ -5,6 +5,9 @@ on:
       - main
 jobs:
   build-and-deploy:
+    defaults:
+      run:
+        working-directory: frontend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -17,7 +20,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/frontend/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Install
@@ -30,4 +33,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BASE_BRANCH: main
           BRANCH: gh-pages
-          FOLDER: frontend/dist/spa
+          FOLDER: dist/spa
