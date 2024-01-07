@@ -1,5 +1,5 @@
 <template>
-  <q-card style="width: 400px; height: 600px">
+  <q-card style="width: 500px; height: 600px">
     <q-toolbar class="q-pl-lg bg-primary text-white shadow-2">
       <q-toolbar-title>Protein Chains</q-toolbar-title>
     </q-toolbar>
@@ -24,6 +24,7 @@
                 :icon="farSquareMinus"
                 flat
                 dense
+                color="primary"
                 float-left
                 square
                 size="8px"
@@ -49,6 +50,7 @@
             dense
             float-left
             square
+            color="primary"
             size="8px"
             @click="
               adding = !adding;
@@ -73,6 +75,9 @@
               <template #option="scope">
                 <q-item v-bind="scope.itemProps">
                   <q-item-section>
+                    <q-item-label caption>
+                      {{ scope.opt.organism }}</q-item-label
+                    >
                     <q-item-label>{{ scope.opt.moleculeName }}</q-item-label>
                     <q-item-label caption>{{ scope.opt.id }}</q-item-label>
                   </q-item-section>
@@ -81,6 +86,7 @@
               <template #selected>
                 <q-item v-if="input">
                   <q-item-section>
+                    <q-item-label caption> {{ input.organism }}</q-item-label>
                     <q-item-label>{{ input.moleculeName }} </q-item-label>
                     <q-item-label caption> {{ input.id }}</q-item-label>
                   </q-item-section>
@@ -175,7 +181,7 @@ const selectedItems = ref<PdbEntity[]>([]);
 // Reactive data
 const input = ref<PdbEntity>();
 const dragging = ref(false);
-const adding = ref(false);
+const adding = ref(true);
 
 // Computed data
 const dragOptions = {
@@ -224,7 +230,8 @@ function filterFn(
     const needle = val.toLowerCase();
     options.value = allItems.value.filter((option) => {
       return (
-        option.id.toLowerCase().indexOf(needle) > -1 &&
+        (option.id.toLowerCase().indexOf(needle) > -1 ||
+          option.moleculeName.toLowerCase().indexOf(needle) > -1) &&
         !selectedItems.value.includes(option)
       );
     });

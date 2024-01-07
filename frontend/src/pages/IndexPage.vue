@@ -1,5 +1,5 @@
 <template>
-  <q-page class="row justify-between">
+  <q-page class="row justify-between bg-secondary">
     <div class="column col-1 justify-center"></div>
     <div class="column col-2 justify-center">
       <selection-card />
