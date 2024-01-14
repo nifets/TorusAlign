@@ -113,6 +113,8 @@ import draggable from 'vuedraggable';
 import { farSquareMinus, farSquarePlus } from '@quasar/extras/fontawesome-v6';
 import { PdbEntity } from 'components/models';
 import { search_api } from 'src/boot/axios';
+import { useQuery } from '@vue/apollo-composable';
+import { gql } from '@apollo/client/core';
 
 const textBox = ref<HTMLInputElement | null>(null);
 
@@ -186,7 +188,6 @@ function filterFn(
         return_type: 'polymer_entity',
       })
       .then(function (response) {
-        console.log(response.data.result_set[0]);
         interface SearchResult {
           identifier: string;
           score: number;
@@ -194,12 +195,48 @@ function filterFn(
         const ids = response.data.result_set.map(
           (x: SearchResult) => x.identifier
         );
+
         options.value = ids.map(
           (id: string) =>
             <PdbEntity>{
               id: id,
             }
         );
+        const entry_data_query = gql`
+          query EntryData($entry_ids: [String!]!) {
+            entries(entry_ids: $entry_ids) {
+              citation {
+                rcsb_authors
+                title
+              }
+              struct {
+                title
+              }
+              rcsb_entry_container_identifiers {
+                polymer_entity_ids
+              }
+              struct_keywords {
+                text
+              }
+            }
+          }
+        `;
+        const entity_data_query = gql`
+          query EntityData($ids: [String!]!) {
+            polymer_entities(entity_ids: $ids) {
+              rcsb_entity_source_organism {
+                ncbi_scientific_name
+              }
+              rcsb_polymer_entity {
+                pdbx_description
+              }
+            }
+          }
+        `;
+        const { result, loading, error } = useQuery(entity_data_query, {
+          variables: { ids: ids },
+        });
+        console.log(result);
       })
       .catch(function (error) {
         console.log(error);
