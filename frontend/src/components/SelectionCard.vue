@@ -1,44 +1,64 @@
 <template>
-  <q-card style="width: 500px; height: 600px">
+  <q-card style="width: 500px; height: 520px">
     <q-toolbar class="q-pl-lg bg-primary text-white shadow-2">
-      <q-toolbar-title>Protein Chains</q-toolbar-title>
+      <q-toolbar-title class="text-weight-regular"
+        >Protein Chains</q-toolbar-title
+      >
     </q-toolbar>
     <q-card-section>
-      <draggable
-        :list="selectedItems"
-        item-key="id"
-        @start="dragging = true"
-        @end="endDrag"
-        v-bind="dragOptions"
-        drag-class="drag"
-        ghost-class="ghost"
-      >
-        <template #item="{ element }">
-          <q-item
-            :style="dragging ? 'border:none;' : ''"
-            key="element.id"
-            clickable
-          >
-            <q-item-section style="width: 40px" side top>
-              <q-btn
-                :icon="farSquareMinus"
-                flat
-                dense
-                color="primary"
-                float-left
-                square
-                size="8px"
-                @click="removeItem(element.id)"
-              />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ element.id }} </q-item-label>
-            </q-item-section>
-          </q-item>
-        </template>
-      </draggable>
+      <div style="max-height: 360px; overflow: auto">
+        <draggable
+          :list="selectedItems"
+          item-key="id"
+          @start="dragging = true"
+          @end="endDrag"
+          v-bind="dragOptions"
+          drag-class="drag"
+          ghost-class="ghost"
+        >
+          <template #item="{ element }">
+            <q-item
+              :style="dragging ? 'border:none;' : ''"
+              key="element.id"
+              clickable
+            >
+              <q-tooltip max-width="360px">
+                {{ element.entryTitle }}<br />
+              </q-tooltip>
+              <q-item-section style="width: 40px" side top>
+                <q-btn
+                  :icon="farSquareMinus"
+                  flat
+                  dense
+                  color="primary"
+                  float-left
+                  square
+                  size="8px"
+                  @click="removeItem(element.id)"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-uppercase text-weight-medium"
+                  >{{ element.moleculeName }}
+                </q-item-label>
+                <q-item-label caption class="text-weight-light">{{
+                  element.sourceOrganism.scientificName
+                }}</q-item-label>
+              </q-item-section>
+              <q-item-section side top>
+                <q-item-label caption class="text-primary text-weight-bold"
+                  >{{ element.entryId }}:{{ element.entityId }}
+                </q-item-label>
+                <q-item-label caption class="text-weight-light text-grey-6">
+                  length: {{ element.sequenceLength }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </template>
+        </draggable>
+      </div>
       <q-item>
-        <q-item-section style="width: 40px" side top>
+        <q-item-section style="width: 40px" side>
           <q-btn
             :icon="adding ? farSquareMinus : farSquarePlus"
             flat
@@ -113,6 +133,8 @@ import draggable from 'vuedraggable';
 import { farSquareMinus, farSquarePlus } from '@quasar/extras/fontawesome-v6';
 import { PdbEntity } from 'components/models';
 import { search_api } from 'src/boot/axios';
+import { useQuery } from '@vue/apollo-composable';
+import { gql } from '@apollo/client/core';
 
 const textBox = ref<HTMLInputElement | null>(null);
 
@@ -186,7 +208,6 @@ function filterFn(
         return_type: 'polymer_entity',
       })
       .then(function (response) {
-        console.log(response.data.result_set[0]);
         interface SearchResult {
           identifier: string;
           score: number;
@@ -194,12 +215,76 @@ function filterFn(
         const ids = response.data.result_set.map(
           (x: SearchResult) => x.identifier
         );
+        const entry_ids = ids.map((id: string) => id.slice(0, 4));
+
+        const entry_data_query = gql`
+          query EntryData($entry_ids: [String!]!) {
+            entries(entry_ids: $entry_ids) {
+              citation {
+                rcsb_authors
+                title
+              }
+              struct {
+                title
+              }
+              rcsb_entry_container_identifiers {
+                polymer_entity_ids
+              }
+              struct_keywords {
+                text
+              }
+            }
+          }
+        `;
+        const entry_data = useQuery(entry_data_query, { entry_ids: entry_ids })
+          .result.value.entries;
+        //console.log(entry_data);
+
+        const entity_data_query = gql`
+          query EntityData($ids: [String!]!) {
+            polymer_entities(entity_ids: $ids) {
+              entity_poly {
+                type
+                rcsb_sample_sequence_length
+              }
+              rcsb_entity_source_organism {
+                common_name
+                ncbi_scientific_name
+              }
+              rcsb_polymer_entity {
+                pdbx_description
+              }
+            }
+          }
+        `;
+        const entity_data = useQuery(entity_data_query, {
+          ids: ids,
+        }).result.value.polymer_entities;
+        //console.log(entity_data);
+
         options.value = ids.map(
-          (id: string) =>
+          (id: string, i: number) =>
             <PdbEntity>{
               id: id,
+              entryId: entry_ids[i],
+              entityId: id.slice(5),
+              moleculeName: entity_data[i].rcsb_polymer_entity.pdbx_description,
+              entryTitle: entry_data[i].struct.title,
+              sourceOrganism: {
+                commonName:
+                  entity_data[i].rcsb_entity_source_organism[0].common_name,
+                scientificName:
+                  entity_data[i].rcsb_entity_source_organism[0]
+                    .ncbi_scientific_name,
+              },
+              citation: {
+                authors: entry_data[i].citation.rcsb_authors,
+              },
+              sequenceLength:
+                entity_data[i].entity_poly.rcsb_sample_sequence_length,
             }
         );
+        console.log(options.value);
       })
       .catch(function (error) {
         console.log(error);

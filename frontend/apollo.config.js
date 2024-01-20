@@ -3,7 +3,7 @@
 module.exports = {
   client: {
     service: {
-      name: 'rcsb-data-api',
+      name: 'rcsb-data',
       url: 'https://data.rcsb.org/graphql',
     },
     // Files processed by the extension
