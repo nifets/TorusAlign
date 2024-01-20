@@ -1,7 +1,9 @@
 <template>
   <q-card style="width: 500px; height: 520px">
     <q-toolbar class="q-pl-lg bg-primary text-white shadow-2">
-      <q-toolbar-title>Protein Chains</q-toolbar-title>
+      <q-toolbar-title class="text-weight-regular"
+        >Protein Chains</q-toolbar-title
+      >
     </q-toolbar>
     <q-card-section>
       <div style="max-height: 360px; overflow: auto">
@@ -56,7 +58,7 @@
         </draggable>
       </div>
       <q-item>
-        <q-item-section style="width: 40px" side top>
+        <q-item-section style="width: 40px" side>
           <q-btn
             :icon="adding ? farSquareMinus : farSquarePlus"
             flat
