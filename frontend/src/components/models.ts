@@ -8,5 +8,8 @@ export interface PdbEntity {
     commonName: string;
     scientificName: string;
   };
+  citation: {
+    authors: Array<string>;
+  };
   sequenceLength: number;
 }

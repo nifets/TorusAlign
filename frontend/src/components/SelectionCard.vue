@@ -20,6 +20,9 @@
               key="element.id"
               clickable
             >
+              <q-tooltip max-width="360px">
+                {{ element.entryTitle }}<br />
+              </q-tooltip>
               <q-item-section style="width: 40px" side top>
                 <q-btn
                   :icon="farSquareMinus"
@@ -33,7 +36,20 @@
                 />
               </q-item-section>
               <q-item-section>
-                <q-item-label>{{ element.id }} </q-item-label>
+                <q-item-label class="text-uppercase text-weight-medium"
+                  >{{ element.moleculeName }}
+                </q-item-label>
+                <q-item-label caption class="text-weight-light">{{
+                  element.sourceOrganism.scientificName
+                }}</q-item-label>
+              </q-item-section>
+              <q-item-section side top>
+                <q-item-label caption class="text-primary text-weight-bold"
+                  >{{ element.entryId }}:{{ element.entityId }}
+                </q-item-label>
+                <q-item-label caption class="text-weight-light text-grey-6">
+                  length: {{ element.sequenceLength }}
+                </q-item-label>
               </q-item-section>
             </q-item>
           </template>
@@ -258,6 +274,9 @@ function filterFn(
                 scientificName:
                   entity_data[i].rcsb_entity_source_organism[0]
                     .ncbi_scientific_name,
+              },
+              citation: {
+                authors: entry_data[i].citation.rcsb_authors,
               },
               sequenceLength:
                 entity_data[i].entity_poly.rcsb_sample_sequence_length,
